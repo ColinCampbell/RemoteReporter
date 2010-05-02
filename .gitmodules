@@ -1,0 +1,3 @@
+[submodule "frameworks/scomet"]
+	path = frameworks/scomet
+	url = git://github.com/ColinCampbell/SComet.git
