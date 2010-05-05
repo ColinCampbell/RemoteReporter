@@ -53,7 +53,7 @@ RemoteReporter = SC.Object.extend(
       // sc-server doesn't allow parallel requests to go through the proxy
       // so we need to temporarily kill the command listening
       this.killCommandListening();
-      console.log("here");
+      
       SC.Request
         .postUrl(this.get('messagesUrl'), data)
         .json()
@@ -98,6 +98,8 @@ RemoteReporter = SC.Object.extend(
     _response: null,
     
     startCommandListening: function() {
+      this.killCommandListening(); // don't want multiple requests at once
+      
       var url = this.get('commandsUrl');
       url += !SC.none(this._lastTimeAsked) ? "?since=" + this._lastTimeAsked : "";
       this._response = SC.Request
@@ -112,9 +114,9 @@ RemoteReporter = SC.Object.extend(
     },
     
     _didReceiveCommand: function(response) {
-      var reporter = this;
+      var reporter = this, ok = SC.ok(response);
       
-      if (SC.ok(response)) {
+      if (ok) {
         var data = response.get('body');
         if (!data.isEnumerable) {
           data = [data];
@@ -134,7 +136,7 @@ RemoteReporter = SC.Object.extend(
       // should we continue polling? sc-server times out the request
       // after 60s, so just continue polling. If it's another error,
       // stop polling
-      if (SC.ok(response) || response.get('timedOut')) {
+      if (ok || response.get('timedOut')) {
         this._lastTimeAsked = Date.now();
         this.startCommandListening();
       } 
